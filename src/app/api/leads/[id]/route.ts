@@ -1,5 +1,4 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { buildLeadSnapshot, diffLeadChanges } from "@/lib/changes";
 import { ensureDefaultStages } from "@/lib/stages";
