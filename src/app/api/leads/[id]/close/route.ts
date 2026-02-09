@@ -1,10 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { ensureDefaultStages } from "@/lib/stages";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
-export async function POST(request: Request, { params }: Params) {
+export async function POST(request: NextRequest, { params }: Params) {
+  const { id } = await params;
   const body = await request.json();
 
   const monthlyPriceCents = Number(body?.monthlyPriceCents ?? 0);
@@ -41,7 +43,7 @@ export async function POST(request: Request, { params }: Params) {
     );
   }
 
-  const lead = await prisma.lead.findUnique({ where: { id: params.id } });
+  const lead = await prisma.lead.findUnique({ where: { id } });
   if (!lead) {
     return NextResponse.json({ error: "Lead no encontrado" }, { status: 404 });
   }

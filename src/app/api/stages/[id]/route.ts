@@ -1,12 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: NextRequest, { params }: Params) {
+  const { id } = await params;
   const body = await request.json();
   const stage = await prisma.pipelineStage.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       nombre: body.nombre ?? undefined,
       color: body.color ?? undefined,
@@ -16,12 +18,13 @@ export async function PATCH(request: Request, { params }: Params) {
   return NextResponse.json(stage);
 }
 
-export async function DELETE(request: Request, { params }: Params) {
+export async function DELETE(request: NextRequest, { params }: Params) {
+  const { id } = await params;
   const body = await request.json().catch(() => ({}));
   const moveToStageId = body?.moveToStageId as string | undefined;
 
   const leadCount = await prisma.lead.count({
-    where: { stageId: params.id },
+    where: { stageId: id },
   });
 
   if (leadCount > 0 && !moveToStageId) {
@@ -33,11 +36,11 @@ export async function DELETE(request: Request, { params }: Params) {
 
   if (leadCount > 0 && moveToStageId) {
     await prisma.lead.updateMany({
-      where: { stageId: params.id },
+      where: { stageId: id },
       data: { stageId: moveToStageId },
     });
   }
 
-  await prisma.pipelineStage.delete({ where: { id: params.id } });
+  await prisma.pipelineStage.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }

@@ -1,13 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { buildLeadSnapshot, diffLeadChanges } from "@/lib/changes";
 import { ensureDefaultStages } from "@/lib/stages";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
-export async function GET(_request: Request, { params }: Params) {
+export async function GET(_request: NextRequest, { params }: Params) {
+  const { id } = await params;
   const lead = await prisma.lead.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       interacciones: { orderBy: { fecha: "desc" } },
       stage: true,
@@ -27,7 +29,8 @@ export async function GET(_request: Request, { params }: Params) {
   });
 }
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: NextRequest, { params }: Params) {
+  const { id } = await params;
   const body = await request.json();
 
   await ensureDefaultStages(prisma);
@@ -36,7 +39,7 @@ export async function PATCH(request: Request, { params }: Params) {
   });
 
   const current = await prisma.lead.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { stage: true, tags: { include: { tag: true } } },
   });
 
@@ -46,7 +49,7 @@ export async function PATCH(request: Request, { params }: Params) {
 
   if (wonStage && body.stageId === wonStage.id) {
     const existingDeal = await prisma.deal.findUnique({
-      where: { leadId: params.id },
+      where: { leadId: id },
     });
     if (!existingDeal) {
       return NextResponse.json(
@@ -63,7 +66,7 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 
   const lead = await prisma.lead.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       nombre: body.nombre ?? undefined,
       empresa: body.empresa ?? undefined,
@@ -133,7 +136,8 @@ export async function PATCH(request: Request, { params }: Params) {
   });
 }
 
-export async function DELETE(_request: Request, { params }: Params) {
-  await prisma.lead.delete({ where: { id: params.id } });
+export async function DELETE(_request: NextRequest, { params }: Params) {
+  const { id } = await params;
+  await prisma.lead.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }

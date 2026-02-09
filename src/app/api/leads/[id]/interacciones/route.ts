@@ -1,9 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
-export async function POST(request: Request, { params }: Params) {
+export async function POST(request: NextRequest, { params }: Params) {
+  const { id } = await params;
   const body = await request.json();
 
   if (!body?.canal || !body?.tipo) {
@@ -15,7 +17,7 @@ export async function POST(request: Request, { params }: Params) {
 
   const interaccion = await prisma.interaccion.create({
     data: {
-      leadId: params.id,
+      leadId: id,
       canal: body.canal,
       tipo: body.tipo,
       contenido: body.contenido || null,

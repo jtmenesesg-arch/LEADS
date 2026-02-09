@@ -1,12 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: NextRequest, { params }: Params) {
+  const { id } = await params;
   const body = await request.json();
   const tag = await prisma.tag.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       nombre: body.nombre ?? undefined,
       color: body.color ?? undefined,
@@ -15,8 +17,9 @@ export async function PATCH(request: Request, { params }: Params) {
   return NextResponse.json(tag);
 }
 
-export async function DELETE(_request: Request, { params }: Params) {
-  await prisma.leadTag.deleteMany({ where: { tagId: params.id } });
-  await prisma.tag.delete({ where: { id: params.id } });
+export async function DELETE(_request: NextRequest, { params }: Params) {
+  const { id } = await params;
+  await prisma.leadTag.deleteMany({ where: { tagId: id } });
+  await prisma.tag.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }

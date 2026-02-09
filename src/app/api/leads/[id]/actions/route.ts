@@ -1,10 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { ensureDefaultStages } from "@/lib/stages";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
-export async function POST(request: Request, { params }: Params) {
+export async function POST(request: NextRequest, { params }: Params) {
+  const { id } = await params;
   const body = await request.json();
   const action = body?.action as string | undefined;
 
@@ -23,7 +25,7 @@ export async function POST(request: Request, { params }: Params) {
       : undefined;
 
     const lead = await prisma.lead.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ultimoContacto: new Date(),
         proximoSeguimiento: proximo ?? undefined,
@@ -57,7 +59,7 @@ export async function POST(request: Request, { params }: Params) {
     });
 
     await prisma.lead.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         proximoSeguimiento: new Date(body.proximoSeguimiento),
         stageId: stage?.id ?? undefined,
@@ -66,7 +68,7 @@ export async function POST(request: Request, { params }: Params) {
 
     await prisma.interaccion.create({
       data: {
-        leadId: params.id,
+        leadId: id,
         canal: body?.canal ?? "OTRO",
         tipo: "FOLLOW_UP",
         contenido: body?.contenido || null,
@@ -82,7 +84,7 @@ export async function POST(request: Request, { params }: Params) {
       where: { key: "RESPONDIO" },
     });
     await prisma.lead.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ultimoContacto: new Date(),
         stageId: stage?.id ?? undefined,
@@ -91,7 +93,7 @@ export async function POST(request: Request, { params }: Params) {
 
     await prisma.interaccion.create({
       data: {
-        leadId: params.id,
+        leadId: id,
         canal: body?.canal ?? "OTRO",
         tipo: "RESPUESTA",
         contenido: body?.contenido || null,
