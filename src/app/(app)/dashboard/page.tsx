@@ -14,7 +14,7 @@ export default async function DashboardPage() {
     orderBy: { orden: "asc" },
   });
   const firstStage = stages[0];
-  const wonStage = stages.find((stage: PipelineStage) => stage.key === "GANADO");
+  const wonStage = stages.find((stage: (typeof stages)[number]) => stage.key === "GANADO");
 
   const [
     nuevos,
@@ -62,7 +62,7 @@ export default async function DashboardPage() {
   );
 
   const trendMap = new Map<string, number>();
-  trendLeads.forEach((lead) => {
+    trendLeads.forEach((lead: (typeof trendLeads)[number]) => {
     const key = lead.creadoEn.toISOString().slice(0, 10);
     trendMap.set(key, (trendMap.get(key) ?? 0) + 1);
   });
@@ -196,7 +196,7 @@ export default async function DashboardPage() {
                 Aun no hay deals cerrados.
               </div>
             ) : (
-              deals.map((deal) => (
+              deals.map((deal: (typeof deals)[number]) => (
                 <div
                   key={deal.id}
                   className="grid grid-cols-[1.4fr_1fr_1fr_1fr_1fr_1fr] gap-0 border-b border-slate-100 px-4 py-3 text-sm text-slate-700"
