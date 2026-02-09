@@ -1,0 +1,147 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum LeadPrioridad {
+  ALTA
+  MEDIA
+  BAJA
+}
+
+enum InteraccionCanal {
+  WHATSAPP
+  LLAMADA
+  INSTAGRAM
+  EMAIL
+  OTRO
+}
+
+enum InteraccionTipo {
+  PRIMER_CONTACTO
+  FOLLOW_UP
+  RESPUESTA
+  REUNION
+  CIERRE
+  NOTA
+}
+
+model Lead {
+  id                 String         @id @default(uuid())
+  nombre             String
+  empresa            String?
+  rubro              String?
+  ciudad             String?
+  telefono           String?
+  whatsapp           String?
+  instagram          String?
+  web                String?
+  stageId            String?
+  prioridad          LeadPrioridad   @default(MEDIA)
+  fuente             String?
+  nota               String?
+  ultimoContacto     DateTime?
+  proximoSeguimiento DateTime?
+  creadoEn           DateTime        @default(now())
+  actualizadoEn      DateTime        @updatedAt
+  interacciones      Interaccion[]
+  stage              PipelineStage?  @relation(fields: [stageId], references: [id])
+  tags               LeadTag[]
+  cambios            LeadChange[]
+  deal               Deal?
+
+  @@index([stageId])
+  @@index([prioridad])
+  @@index([rubro])
+  @@index([ciudad])
+  @@index([fuente])
+  @@index([proximoSeguimiento])
+}
+
+model Tag {
+  id           String    @id @default(uuid())
+  nombre       String    @unique
+  color        String
+  creadoEn     DateTime  @default(now())
+  actualizadoEn DateTime @updatedAt
+  leads        LeadTag[]
+}
+
+model LeadTag {
+  leadId   String
+  tagId    String
+  creadoEn DateTime @default(now())
+  lead     Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  tag      Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([leadId, tagId])
+  @@index([tagId])
+}
+
+model SavedSegment {
+  id           String   @id @default(uuid())
+  nombre       String
+  filtros      Json
+  creadoEn     DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+}
+
+model LeadChange {
+  id        String   @id @default(uuid())
+  leadId    String
+  campo     String
+  valorAntes String?
+  valorDespues String?
+  creadoEn  DateTime @default(now())
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([creadoEn])
+}
+
+model Deal {
+  id                String   @id @default(uuid())
+  leadId            String   @unique
+  lead              Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  currency          String   @default("CLP")
+  monthlyPriceCents Int
+  setupPriceCents   Int
+  closedAt          DateTime @default(now())
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model PipelineStage {
+  id        String  @id @default(uuid())
+  key       String? @unique
+  nombre    String
+  color     String
+  orden     Int
+  creadoEn  DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+  leads     Lead[]
+
+  @@index([orden])
+}
+
+model Interaccion {
+  id        String           @id @default(uuid())
+  leadId    String
+  canal     InteraccionCanal
+  tipo      InteraccionTipo
+  contenido String?
+  fecha     DateTime         @default(now())
+  creadoEn  DateTime         @default(now())
+  lead      Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([fecha])
+}

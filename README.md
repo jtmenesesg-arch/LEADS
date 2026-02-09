@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Leadflow CRM (Personal)
 
-## Getting Started
+Mini CRM de prospeccion para gestionar leads en un pipeline con Kanban.
 
-First, run the development server:
+## Stack
+- Next.js (App Router) + TypeScript
+- Tailwind CSS
+- Prisma ORM
+- SQLite (por defecto), listo para migrar a Postgres
 
+## Requisitos
+- Node.js 20+
+- npm
+
+## Configuracion
+1) Instalar dependencias
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2) Configurar base de datos (SQLite por defecto)
+```bash
+npx prisma migrate dev
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3) Ejecutar en desarrollo
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+La app corre en http://localhost:3000
 
-## Learn More
+## Scripts utiles
+- `npm run dev` - modo desarrollo
+- `npm run build` - build de produccion
+- `npm run start` - iniciar build de produccion
 
-To learn more about Next.js, take a look at the following resources:
+## Arquitectura basica
+- `src/app/(app)` - layout con sidebar y vistas
+- `src/app/api` - API routes
+- `src/components` - UI y vistas
+- `src/lib` - Prisma client y utilidades
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notas
+- El datasource esta en `.env` (`DATABASE_URL="file:./dev.db"`).
+- Para migrar a Postgres, actualiza `DATABASE_URL` y ejecuta `npx prisma migrate dev`.
