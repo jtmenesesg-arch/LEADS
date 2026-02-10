@@ -137,7 +137,7 @@ export default async function DashboardPage() {
             Leads por etapa
           </h2>
           <div className="mt-6 flex flex-col gap-3">
-            {stages.map((stage: PipelineStage) => {
+            {stages.map((stage: (typeof stages)[number]) => {
               const count = stageMap.get(stage.id) ?? 0;
               const width = Math.max(6, Math.min(100, count * 12));
               return (
