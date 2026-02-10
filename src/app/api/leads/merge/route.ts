@@ -96,10 +96,7 @@ export async function POST(request: Request) {
         proximoSeguimiento: latestSeguimiento,
         tags: {
           deleteMany: {},
-          createMany: {
-            data: Array.from(tagIds).map((tagId) => ({ tagId })),
-            skipDuplicates: true,
-          },
+          create: Array.from(tagIds).map((tagId) => ({ tagId })),
         },
         deal: targetDeal
           ? {
